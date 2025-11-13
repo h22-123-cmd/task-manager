@@ -1,0 +1,24 @@
+using Microsoft.EntityFrameworkCore;
+using TaskManager.API.Models;
+
+namespace TaskManager.API.Data
+{
+    public class ApplicationDbContext : DbContext
+    {
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
+        {
+        }
+
+        public DbSet<User> Users { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            // داده‌های اولیه برای تست
+            modelBuilder.Entity<User>().HasData(
+                new User { Id = 1, Username = "admin", Password = "admin123", Role = "Admin", FullName = "مدیر سیستم" },
+                new User { Id = 2, Username = "employee1", Password = "123456", Role = "Employee", FullName = "کارمند شماره ۱" },
+                new User { Id = 3, Username = "employee2", Password = "123456", Role = "Employee", FullName = "کارمند شماره ۲" }
+            );
+        }
+    }
+}

@@ -1,0 +1,167 @@
+using Microsoft.AspNetCore.Mvc;
+using TaskManager.API.Models;
+using System.Text.Json;
+
+namespace TaskManager.API.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class ReportsController : ControllerBase
+    {
+        private static List<WorkTask> _tasks = new();
+        private static readonly string _dataFile = Path.Combine(Directory.GetCurrentDirectory(), "data", "tasks.json");
+
+        public ReportsController()
+        {
+            LoadTasks();
+        }
+
+        // GET: api/reports/daily
+        [HttpGet("daily")]
+        public ActionResult<object> GetDailyReport([FromQuery] int userId, [FromQuery] string date)
+        {
+            if (!DateTime.TryParse(date, out var filterDate))
+            {
+                filterDate = DateTime.Today;
+            }
+
+            var userTasks = _tasks.Where(t => t.UserId == userId && t.Date.Date == filterDate.Date).ToList();
+
+            var report = new
+            {
+                Date = filterDate.ToString("yyyy-MM-dd"),
+                TotalTasks = userTasks.Count,
+                TotalAmount = userTasks.Sum(t => t.Amount),
+                TotalDuration = userTasks.Sum(t => t.Duration),
+                Tasks = userTasks.Select(t => new
+                {
+                    t.Title,
+                    Amount = t.Amount,
+                    Duration = FormatDuration(t.Duration),
+                    Type = t.Type,
+                    SharedWithName = t.SharedWith.HasValue ? GetUserName(t.SharedWith.Value) : "",
+                    t.SharePercentage
+                })
+            };
+
+            return Ok(report);
+        }
+
+        // GET: api/reports/monthly
+        [HttpGet("monthly")]
+        public ActionResult<object> GetMonthlyReport([FromQuery] int userId, [FromQuery] int year, [FromQuery] int month)
+        {
+            var userTasks = _tasks.Where(t => 
+                t.UserId == userId && 
+                t.Date.Year == year && 
+                t.Date.Month == month).ToList();
+
+            var dailyStats = userTasks
+                .GroupBy(t => t.Date.Date)
+                .Select(g => new
+                {
+                    Date = g.Key.ToString("yyyy-MM-dd"),
+                    TasksCount = g.Count(),
+                    TotalAmount = g.Sum(t => t.Amount),
+                    TotalDuration = g.Sum(t => t.Duration)
+                })
+                .OrderBy(x => x.Date)
+                .ToList();
+
+            var report = new
+            {
+                Year = year,
+                Month = month,
+                MonthName = GetMonthName(month),
+                TotalTasks = userTasks.Count,
+                TotalAmount = userTasks.Sum(t => t.Amount),
+                TotalDuration = userTasks.Sum(t => t.Duration),
+                DailyStats = dailyStats
+            };
+
+            return Ok(report);
+        }
+
+        // GET: api/reports/summary
+        [HttpGet("summary")]
+        public ActionResult<object> GetSummaryReport([FromQuery] int userId, [FromQuery] string startDate, [FromQuery] string endDate)
+        {
+            if (!DateTime.TryParse(startDate, out var start) || !DateTime.TryParse(endDate, out var end))
+            {
+                start = DateTime.Today.AddDays(-7);
+                end = DateTime.Today;
+            }
+
+            var userTasks = _tasks.Where(t => 
+                t.UserId == userId && 
+                t.Date.Date >= start.Date && 
+                t.Date.Date <= end.Date).ToList();
+
+            var report = new
+            {
+                StartDate = start.ToString("yyyy-MM-dd"),
+                EndDate = end.ToString("yyyy-MM-dd"),
+                TotalTasks = userTasks.Count,
+                TotalAmount = userTasks.Sum(t => t.Amount),
+                TotalDuration = userTasks.Sum(t => t.Duration),
+                AverageDailyAmount = userTasks.Any() ? userTasks.Sum(t => t.Amount) / ((end - start).Days + 1) : 0,
+                AverageDailyTasks = userTasks.Any() ? (double)userTasks.Count / ((end - start).Days + 1) : 0
+            };
+
+            return Ok(report);
+        }
+
+        // Helper methods
+        private string FormatDuration(int minutes)
+        {
+            var hours = minutes / 60;
+            var mins = minutes % 60;
+            return hours > 0 ? $"{hours}h {mins}m" : $"{mins}m";
+        }
+
+        private string GetUserName(int userId)
+        {
+            var users = new Dictionary<int, string>
+            {
+                { 1, "System Admin" },
+                { 2, "Employee 1" },
+                { 3, "Employee 2" }
+            };
+            return users.ContainsKey(userId) ? users[userId] : "Unknown";
+        }
+
+        private string GetMonthName(int month)
+        {
+            var months = new[]
+            {
+                "January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"
+            };
+            return month >= 1 && month <= 12 ? months[month - 1] : "Unknown";
+        }
+
+        private void LoadTasks()
+        {
+            try
+            {
+                if (File.Exists(_dataFile))
+                {
+                    var json = File.ReadAllText(_dataFile);
+                    var data = JsonSerializer.Deserialize<TaskManager.API.Models.TaskData>(json);
+                    _tasks = data?.Tasks ?? new List<WorkTask>();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading tasks for reports: {ex.Message}");
+                _tasks = new List<WorkTask>();
+            }
+        }
+    }
+
+    public class TaskData
+    {
+        public List<WorkTask> Tasks { get; set; } = new();
+        public int NextId { get; set; } = 1;
+    }
+}
