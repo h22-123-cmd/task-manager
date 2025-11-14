@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE } from '../config';
 
 interface UserManagementProps {
   onClose: () => void;
@@ -21,7 +22,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ onClose }) => {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('https://localhost:7081/api/Auth/users');
+      const response = await fetch(`${API_BASE}/Auth/users`,);
       const data = await response.json();
       setUsers(data);
     } catch (error) {
@@ -63,7 +64,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ onClose }) => {
   const handleDelete = async (userId: number) => {
     if (window.confirm('آیا از حذف این کاربر مطمئن هستید؟')) {
       try {
-        const response = await fetch(`https://localhost:7081/api/Auth/users/${userId}`, {
+        const response = await fetch(`${API_BASE}/Auth/users`, {
           method: 'DELETE'
         });
 

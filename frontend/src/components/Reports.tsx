@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE } from '../config';
 
 interface ReportsProps {
   onClose: () => void;
@@ -40,7 +41,7 @@ const Reports: React.FC<ReportsProps> = ({ onClose }) => {
           break;
       }
 
-      const response = await fetch(url);
+      const response = await fetch(`${API_BASE}/reports/daily`,);
       const data = await response.json();
       setReportData(data);
     } catch (error) {

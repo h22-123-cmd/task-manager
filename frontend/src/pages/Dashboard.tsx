@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import TaskForm from '../components/TaskForm';
 import UserManagement from '../components/UserManagement';
 import Reports from '../components/Reports';
+import { API_BASE } from '../config';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -27,7 +28,7 @@ const Dashboard: React.FC = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('https://localhost:7081/api/Auth/users');
+      const response = await fetch(`${API_BASE}/Auth/users`);
       const data = await response.json();
       setUsers(data);
     } catch (error) {
@@ -39,7 +40,7 @@ const Dashboard: React.FC = () => {
     try {
       console.log('Fetching tasks for user:', userId, 'on date:', selectedDate);
       
-      const response = await fetch(`https://localhost:7081/api/tasks?userId=${userId}&date=${selectedDate}`);
+      const response = await fetch(`${API_BASE}/tasks?userId=${userId}`);
       
       console.log('Response status:', response.status);
       
@@ -59,7 +60,7 @@ const Dashboard: React.FC = () => {
 
   const fetchSummary = async () => {
     try {
-      const response = await fetch(`https://localhost:7081/api/tasks/summary?userId=${userId}&date=${selectedDate}`);
+      const response = await fetch(`${API_BASE}/tasks?userId=${userId}`);
       const data = await response.json();
       setSummary({
         totalTasks: data.totalTasks,
@@ -81,7 +82,7 @@ const Dashboard: React.FC = () => {
         userId: userId
       };
 
-      const response = await fetch('https://localhost:7081/api/tasks', {
+      const response = await fetch(`${API_BASE}/tasks?userId=${userId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -122,7 +123,7 @@ const Dashboard: React.FC = () => {
   const handleDeleteTask = async (taskId: number) => {
     if (window.confirm('Are you sure you want to delete this task?')) {
       try {
-        const response = await fetch(`https://localhost:7081/api/tasks/${taskId}`, {
+        const response = await fetch(`${API_BASE}/tasks?userId=${userId}`, {
           method: 'DELETE'
         });
 

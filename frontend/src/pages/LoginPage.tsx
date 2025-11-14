@@ -1,3 +1,4 @@
+import { API_BASE } from '../config';
 import React, { useState } from 'react';
 
 const LoginPage: React.FC = () => {
@@ -12,9 +13,9 @@ const LoginPage: React.FC = () => {
     setError('');
 
     try {
-      console.log('در حال ارسال درخواست به سرور...');
+      console.log('Sending request to server...');
       
-      const response = await fetch('https://localhost:7081/api/Auth/login', {
+      const response = await fetch(`${API_BASE}/Auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -26,35 +27,35 @@ const LoginPage: React.FC = () => {
         }),
       });
 
-      console.log('وضعیت پاسخ:', response.status);
-      console.log('وضعیت OK:', response.ok);
+      console.log('Response status:', response.status);
+      console.log('Response OK:', response.ok);
 
       if (!response.ok) {
-        throw new Error(`خطای HTTP: ${response.status}`);
+        throw new Error(`HTTP error: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log('داده دریافتی:', data);
+      console.log('Received data:', data);
 
       if (data.success) {
-        console.log('ورود موفق:', data.user);
+        console.log('Login successful:', data.user);
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        alert(`خوش آمدید ${data.user.fullName}`);
-        // ریدایرکت به داشبورد
+        alert(`Welcome ${data.user.fullName}`);
+        // Redirect to dashboard
         window.location.href = '/dashboard';
       } else {
-        setError(data.message || 'نام کاربری یا رمز عبور اشتباه است');
+        setError(data.message || 'Invalid username or password');
       }
     } catch (err: any) {
-      console.error('خطای کامل:', err);
-      setError(`خطا در ارتباط با سرور: ${err.message}`);
+      console.error('Full error:', err);
+      setError(`Server connection error: ${err.message}`);
     } finally {
       setLoading(false);
     }
   };
 
-  // استایل‌ها (همان کد قبلی)
+  // Styles
   const styles = {
     container: {
       display: 'flex',
@@ -98,7 +99,7 @@ const LoginPage: React.FC = () => {
     },
     inputGroup: {
       marginBottom: '25px',
-      textAlign: 'right' as 'right'
+      textAlign: 'left' as 'left'
     },
     label: {
       display: 'block',
@@ -115,7 +116,7 @@ const LoginPage: React.FC = () => {
       fontSize: '16px',
       outline: 'none',
       transition: 'all 0.3s ease',
-      textAlign: 'right' as 'right'
+      textAlign: 'left' as 'left'
     },
     button: {
       backgroundColor: '#4299e1',
@@ -158,34 +159,34 @@ const LoginPage: React.FC = () => {
       <div style={styles.loginBox}>
         <div style={styles.header}>
           <div style={styles.logo}>✅</div>
-          <h1 style={styles.title}>سیستم مدیریت وظایف</h1>
-          <p style={styles.subtitle}>Task Management System</p>
+          <h1 style={styles.title}>Task Management System</h1>
+          <p style={styles.subtitle}>Manage your tasks efficiently</p>
         </div>
         
         <form onSubmit={handleLogin} style={styles.form}>
           {error && <div style={styles.error}>{error}</div>}
           
           <div style={styles.inputGroup}>
-            <label style={styles.label}>نام کاربری / Username</label>
+            <label style={styles.label}>Username</label>
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               style={styles.input}
-              placeholder="نام کاربری خود را وارد کنید"
+              placeholder="Enter your username"
               required
               disabled={loading}
             />
           </div>
           
           <div style={styles.inputGroup}>
-            <label style={styles.label}>رمز عبور / Password</label>
+            <label style={styles.label}>Password</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               style={styles.input}
-              placeholder="رمز عبور خود را وارد کنید"
+              placeholder="Enter your password"
               required
               disabled={loading}
             />
@@ -199,12 +200,12 @@ const LoginPage: React.FC = () => {
             }}
             disabled={loading}
           >
-            {loading ? 'در حال ورود...' : 'ورود به سیستم / Login'}
+            {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
 
         <div style={styles.footer}>
-          <p style={styles.footerText}>نسخه ۱.۰</p>
+          <p style={styles.footerText}>Version 1.0</p>
         </div>
       </div>
     </div>
