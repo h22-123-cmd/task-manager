@@ -1,0 +1,41 @@
+{
+  "Tasks": [
+    {
+      "Id": 1,
+      "Title": "1212",
+      "Amount": 1222,
+      "Duration": 111,
+      "Date": "2025-11-13T00:00:00",
+      "Type": "individual",
+      "UserId": 1,
+      "SharedWith": null,
+      "SharePercentage": null,
+      "CreatedAt": "2025-11-13T06:09:52.2724078Z"
+    },
+    {
+      "Id": 2,
+      "Title": "22122",
+      "Amount": 11111,
+      "Duration": 2222,
+      "Date": "2025-11-13T00:00:00",
+      "Type": "individual",
+      "UserId": 4,
+      "SharedWith": null,
+      "SharePercentage": null,
+      "CreatedAt": "2025-11-13T06:10:59.3080196Z"
+    },
+    {
+      "Id": 3,
+      "Title": "1212121212",
+      "Amount": 10,
+      "Duration": 120,
+      "Date": "2025-11-13T00:00:00",
+      "Type": "shared",
+      "UserId": 4,
+      "SharedWith": 1,
+      "SharePercentage": 50,
+      "CreatedAt": "2025-11-13T06:29:25.0153579Z"
+    }
+  ],
+  "NextId": 4
+}
