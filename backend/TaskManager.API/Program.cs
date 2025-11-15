@@ -1,38 +1,34 @@
+using Microsoft.EntityFrameworkCore;
+using TaskManager.API.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+// PostgreSQL Connection
+var connectionString = "Host=dpg-d4bs6f24d50c73cpk9m0-a.oregon-postgres.render.com;Port=5432;Database=taskmanager_qy5j;Username=taskmanager_user;Password=YjMYLdVa17GAa80CkRZppVNedw0ff4Jg;SSL Mode=Require;Trust Server Certificate=true;";
 
-// CORS - این بخش رو اضافه کن
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll", policy =>
-    {
-        policy.AllowAnyOrigin()
-              .AllowAnyHeader()
-              .AllowAnyMethod();
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(connectionString));
+
+// بقیه سرویس‌ها...
+builder.Services.AddControllers();
+builder.Services.AddCors(options => {
+    options.AddPolicy("AllowAll", policy => {
+        policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
     });
 });
 
 var app = builder.Build();
 
-// Configure pipeline
-if (app.Environment.IsDevelopment())
+// Create database tables
+using (var scope = app.Services.CreateScope())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.EnsureCreated();
 }
 
-app.UseHttpsRedirection();
-
-// CORS - این خط رو اضافه کن (بعد از UseHttpsRedirection و قبل از UseAuthorization)
 app.UseCors("AllowAll");
-
 app.UseAuthorization();
 app.MapControllers();
 
-// برای Render.com
 var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
 app.Run($"http://0.0.0.0:{port}");
